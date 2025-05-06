@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Laptop Price Predictor</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script>
+    const gpuOptions = JSON.parse('{{ gpu_options | tojson | safe }}');
+    const cpuOptions = JSON.parse('{{ cpu_options | tojson | safe }}');
+
+    function updateGPUOptions() {
+      const brand = document.getElementById("gpu_brand").value;
+      const gpuSelect = document.getElementById("gpu");
+      gpuSelect.innerHTML = "";
+
+      if (gpuOptions[brand]) {
+        gpuOptions[brand].forEach(gpu => {
+          const option = document.createElement("option");
+          option.value = gpu;
+          option.text = gpu;
+          gpuSelect.appendChild(option);
+        });
+      }
+    }
+
+    function updateCPUOptions() {
+      const brand = document.getElementById("cpu_brand").value;
+      const cpuSelect = document.getElementById("cpu");
+      cpuSelect.innerHTML = "";
+
+      if (cpuOptions[brand]) {
+        cpuOptions[brand].forEach(cpu => {
+          const option = document.createElement("option");
+          option.value = cpu;
+          option.text = cpu;
+          cpuSelect.appendChild(option);
+        });
+      }
+    }
+
+    window.onload = function () {
+      updateGPUOptions();
+      updateCPUOptions();
+    };
+  </script>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 to-white min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-3xl space-y-6">
+    <div class="text-center">
+      <h1 class="text-3xl font-extrabold text-indigo-700 mb-2">💻 Laptop Price Predictor</h1>
+      <p class="text-sm text-gray-500">Enter laptop specifications to estimate the price</p>
+    </div>
+
+    <form action="{{ url_for('predict') }}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Company -->
+      <div>
+        <label for="company" class="block text-sm font-semibold text-gray-700">Company</label>
+        <select id="company" name="company" class="form-select w-full mt-1 rounded-md" required>
+          <option value="" disabled selected>Select a company</option>
+          {% for company in company %}
+          <option value="{{ company }}">{{ company }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Laptop Type -->
+      <div>
+        <label for="typename" class="block text-sm font-semibold text-gray-700">Laptop Type</label>
+        <select id="typename" name="typename" class="form-select w-full mt-1 rounded-md" required>
+          <option value="" disabled selected>Select a type</option>
+          {% for type in typenames %}
+          <option value="{{ type }}">{{ type }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Inches -->
+      <div>
+        <label for="inches" class="block text-sm font-semibold text-gray-700">Screen Size (inches)</label>
+        <select id="inches" name="inches" class="form-select w-full mt-1 rounded-md" required>
+          <option value="" disabled selected>Select screen size</option>
+          {% for size in inches %}
+          <option value="{{ size }}">{{ size }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Resolution -->
+      <div>
+        <label for="resolution" class="block text-sm font-semibold text-gray-700">Screen Resolution</label>
+        <select id="resolution" name="resolution" class="form-select w-full mt-1 rounded-md" required>
+          <option value="" disabled selected>Select resolution</option>
+          {% for res in resolution %}
+          <option value="{{ res }}">{{ res }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- CPU Brand -->
+      <div>
+        <label for="cpu_brand" class="block text-sm font-semibold text-gray-700">CPU Brand</label>
+        <select name="cpu_brand" id="cpu_brand" class="form-select w-full mt-1 rounded-md" onchange="updateCPUOptions()" required>
+          <option value="" disabled selected>Select CPU Brand</option>
+          {% for brand in cpu_options.keys() %}
+          <option value="{{ brand }}">{{ brand }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- CPU -->
+      <div>
+        <label for="cpu" class="block text-sm font-semibold text-gray-700">CPU</label>
+        <select name="cpu" id="cpu" class="form-select w-full mt-1 rounded-md" required>
+          <!-- Filled by JS -->
+        </select>
+      </div>
+
+      <!-- GPU Brand -->
+      <div>
+        <label for="gpu_brand" class="block text-sm font-semibold text-gray-700">GPU Brand</label>
+        <select name="gpu_brand" id="gpu_brand" class="form-select w-full mt-1 rounded-md" onchange="updateGPUOptions()" required>
+          <option value="" disabled selected>Select GPU Brand</option>
+          {% for brand in gpu_options.keys() %}
+          <option value="{{ brand }}">{{ brand }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- GPU -->
+      <div>
+        <label for="gpu" class="block text-sm font-semibold text-gray-700">GPU</label>
+        <select name="gpu" id="gpu" class="form-select w-full mt-1 rounded-md" required>
+          <!-- Filled by JS -->
+        </select>
+      </div>
+
+      <!-- RAM -->
+      <div>
+        <label for="ram" class="block text-sm font-semibold text-gray-700">RAM (GB)</label>
+        <select id="ram" name="ram" class="form-select w-full mt-1 rounded-md" required>
+          <option value="" disabled selected>Select RAM size</option>
+          {% for ram in ram %}
+          <option value="{{ ram }}">{{ ram }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- OS -->
+      <div>
+        <label for="opsys" class="block text-sm font-semibold text-gray-700">Operating System</label>
+        <select id="opsys" name="opsys" class="form-select w-full mt-1 rounded-md" required>
+          <option value="" disabled selected>Select OS</option>
+          {% for os in opsys_list %}
+          <option value="{{ os }}">{{ os }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Storage -->
+      <div>
+        <label for="memory_1_sto(GB)" class="block text-sm font-semibold text-gray-700">Primary Storage (GB)</label>
+        <select id="memory_1_sto(GB)" name="memory_1_sto(GB)" class="form-select w-full mt-1 rounded-md" required>
+          <option value="" disabled selected>Select size</option>
+          {% for mem in memory_1_sto %}
+          <option value="{{ mem }}">{{ mem }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label for="memory_1_type" class="block text-sm font-semibold text-gray-700">Storage Type</label>
+        <select id="memory_1_type" name="memory_1_type" class="form-select w-full mt-1 rounded-md" required>
+          <option value="" disabled selected>Select type</option>
+          {% for mem_type in memory_types %}
+          <option value="{{ mem_type }}">{{ mem_type }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Touchscreen -->
+      <div class="col-span-full flex items-center space-x-2">
+        <input type="checkbox" id="touchscreen" name="touchscreen" class="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
+        <label for="touchscreen" class="text-sm text-gray-700">Touchscreen</label>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="col-span-full">
+        <button type="submit" class="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          🔍 Predict Price
+        </button>
+      </div>
+    </form>
+
+    {% if prediction_text %}
+    <div class="text-center mt-6 bg-indigo-50 border border-indigo-200 text-indigo-700 p-4 rounded-md shadow">
+      {{ prediction_text }}
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>
